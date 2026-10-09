@@ -33,7 +33,7 @@ jobs:
             -v "$PWD/output:/output" \
             -v /var/lib/containers/storage:/var/lib/containers/storage \
             quay.io/centos-bootc/bootc-image-builder:latest \
-            --type iso --local "$IMAGE"
+            --type iso --rootfs btrfs --local "$IMAGE"
           sudo chown -R "$(id -u):$(id -g)" output
           find output -name '*.iso' -printf '%p  (%s bytes)\n'
 
