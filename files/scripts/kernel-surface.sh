@@ -13,6 +13,8 @@
 set -euo pipefail
 
 FEDORA_SURFACE_REPO="f43"
+SURFACE_REPO_URL="https://pkg.surfacelinux.com/fedora/${FEDORA_SURFACE_REPO}/"
+SURFACE_KEY_URL="https://raw.githubusercontent.com/linux-surface/linux-surface/master/pkg/keys/surface.asc"
 
 echo "::group::Configure dnf"
 dnf -y install dnf-plugins-core --setopt=install_weak_deps=False
@@ -35,31 +37,17 @@ dnf -y remove \
 rm -rf /usr/lib/modules/*
 echo "::endgroup::"
 
-echo "::group::Add the linux-surface repository (${FEDORA_SURFACE_REPO})"
-cat > /etc/yum.repos.d/linux-surface.repo <<EOF
-[linux-surface]
-name=linux-surface
-baseurl=https://pkg.surfacelinux.com/fedora/${FEDORA_SURFACE_REPO}/
-enabled=1
-skip_if_unavailable=0
-gpgkey=https://raw.githubusercontent.com/linux-surface/linux-surface/master/pkg/keys/surface.asc
-gpgcheck=1
-enabled_metadata=1
-type=rpm-md
-repo_gpgcheck=0
-EOF
-echo "--- /etc/yum.repos.d/linux-surface.repo ---"
-cat /etc/yum.repos.d/linux-surface.repo
-echo "--- enabled repos ---"
-dnf repolist --enabled || true
-echo "--- available kernel-surface ---"
-dnf --refresh list --available kernel-surface || true
+echo "::group::Import the linux-surface signing key"
+rpm --import "${SURFACE_KEY_URL}" || true
 echo "::endgroup::"
 
 echo "::group::Install kernel-surface and Surface userspace"
-# Exclude Fedora's own kernel by EXACT name so dnf cannot pull it back in as a
-# dependency; these exact names do not match kernel-surface*.
-dnf -y install --allowerasing --setopt=install_weak_deps=False \
+# Use an ad-hoc repo definition (--repofrompath) so we do not depend on a repo
+# file being picked up. Exact --exclude names keep Fedora's kernel out without
+# matching kernel-surface*.
+dnf -y install --refresh --allowerasing --setopt=install_weak_deps=False \
+    --repofrompath="linux-surface,${SURFACE_REPO_URL}" \
+    --enablerepo=linux-surface \
     --exclude=kernel --exclude=kernel-core --exclude=kernel-modules \
     --exclude=kernel-modules-core --exclude=kernel-modules-extra \
     kernel-surface \
@@ -76,7 +64,6 @@ dracut --kver "${VER}" --force --add ostree --no-hostonly --reproducible \
 echo "::endgroup::"
 
 echo "::group::Cleanup"
-rm -f /etc/yum.repos.d/linux-surface.repo
 dnf clean all
 echo "::endgroup::"
 
