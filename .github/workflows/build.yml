@@ -31,6 +31,8 @@ jobs:
           registry_token: ${{ github.token }}
           pr_event_number: ${{ github.event.number }}
           maximize_build_space: true
-          # Uncomment after adding the SIGNING_SECRET repository secret,
-          # and uncomment the "signing" module in recipes/recipe.yml.
+          # Unsigned build: no cosign key needed. To sign instead, delete this
+          # line, uncomment cosign_private_key below, add the SIGNING_SECRET
+          # repo secret, and uncomment the "signing" module in recipes/recipe.yml.
+          build_opts: "--no-sign"
           # cosign_private_key: ${{ secrets.SIGNING_SECRET }}

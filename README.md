@@ -106,13 +106,15 @@ USB stick, and boot the Surface from it.
 
 ### 4. (Optional) Sign the image
 
-Unsigned images work fine (use `ostree-unverified-registry:`, as above). To sign:
+By default the build is **unsigned** (the workflow passes `--no-sign`), which is
+why the rebase command above uses `ostree-unverified-registry:`. To sign:
 
 1. `cosign generate-key-pair` (on any machine) → produces `cosign.key` / `cosign.pub`.
 2. Add the contents of `cosign.key` as a repo secret named `SIGNING_SECRET`.
-3. Uncomment the `cosign_private_key:` line in `.github/workflows/build.yml`
-   **and** the `signing` module in `recipes/recipe.yml`.
-4. Re-run the build, then rebase with
+3. In `.github/workflows/build.yml`: **delete** the `build_opts: "--no-sign"`
+   line and **uncomment** the `cosign_private_key:` line.
+4. Uncomment the `signing` module in `recipes/recipe.yml`.
+5. Re-run the build, then rebase with
    `ostree-image-signed:docker://ghcr.io/<your-user>/bazzite-sp4:latest`.
 
 ---
