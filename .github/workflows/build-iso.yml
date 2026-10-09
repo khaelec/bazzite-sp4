@@ -1,0 +1,42 @@
+name: build-iso
+on:
+  workflow_dispatch: # run manually after the image has been built
+  workflow_run:
+    workflows: ["bluebuild"]
+    types: [completed]
+
+jobs:
+  iso:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android /opt/hostedtoolcache/CodeQL || true
+          sudo docker image prune -af || true
+
+      - name: Build a bootable ISO from the image
+        env:
+          # Must match "name" in recipes/recipe.yml and your GitHub owner.
+          IMAGE: ghcr.io/${{ github.repository_owner }}/bazzite-sp4:latest
+        run: |
+          set -eux
+          mkdir -p output
+          sudo podman pull "$IMAGE"
+          sudo podman run --privileged --rm \
+            -v "$PWD/output:/output" \
+            -v /var/lib/containers/storage:/var/lib/containers/storage \
+            quay.io/centos-bootc/bootc-image-builder:latest \
+            --type iso --local "$IMAGE"
+          sudo chown -R "$(id -u):$(id -g)" output
+          find output -name '*.iso' -printf '%p  (%s bytes)\n'
+
+      - name: Upload ISO artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bazzite-sp4-iso
+          path: output/**/*.iso
+          if-no-files-found: error

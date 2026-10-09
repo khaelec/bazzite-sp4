@@ -1,0 +1,28 @@
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+# Image will be published to ghcr.io/<your-github-user>/<name>
+name: bazzite-sp4
+description: Bazzite (KDE Plasma) with the linux-surface kernel baked in for the Microsoft Surface Pro 4.
+
+# Base image. Fedora 43 is deliberate: the linux-surface package repo only
+# publishes f43 right now (f44 is not out yet). Bazzite still ships F43 images
+# under the "stable-43" tag. ghcr.io/ublue-os/bazzite = KDE Plasma; use
+# ghcr.io/ublue-os/bazzite-gnome instead if you ever want GNOME.
+base-image: ghcr.io/ublue-os/bazzite
+image-version: stable-43
+
+modules:
+  # Swaps the Bazzite/OGC kernel for the linux-surface kernel and adds the
+  # Surface userspace packages (iptsd, libwacom-surface). See files/scripts.
+  - type: script
+    scripts:
+      - kernel-surface.sh
+
+  - type: os-release
+    properties:
+      PRETTY_NAME: "Bazzite Surface Pro 4 (Fedora 43)"
+      DEFAULT_HOSTNAME: surface
+
+  # Enable signed images once you have added the SIGNING_SECRET repo secret
+  # (see README). Without this the image builds fine but is unsigned.
+  # - type: signing
