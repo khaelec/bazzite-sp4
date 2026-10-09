@@ -41,13 +41,19 @@ echo "::group::Import the linux-surface signing key"
 rpm --import "${SURFACE_KEY_URL}" || true
 echo "::endgroup::"
 
+echo "::group::Inspect existing repos"
+ls -la /etc/yum.repos.d/ || true
+echo "--- pre-existing linux-surface repo (if any) ---"
+cat /etc/yum.repos.d/linux-surface.repo 2>/dev/null || echo "(none)"
+echo "::endgroup::"
+
 echo "::group::Install kernel-surface and Surface userspace"
-# Use an ad-hoc repo definition (--repofrompath) so we do not depend on a repo
-# file being picked up. Exact --exclude names keep Fedora's kernel out without
-# matching kernel-surface*.
+# Use an ad-hoc repo definition (--repofrompath) with a UNIQUE id, because the
+# Bazzite base image may already define a "linux-surface" repo. Exact --exclude
+# names keep Fedora's kernel out without matching kernel-surface*.
 dnf -y install --refresh --allowerasing --setopt=install_weak_deps=False \
-    --repofrompath="linux-surface,${SURFACE_REPO_URL}" \
-    --enablerepo=linux-surface \
+    --repofrompath="surface-sp4,${SURFACE_REPO_URL}" \
+    --enablerepo=surface-sp4 \
     --exclude=kernel --exclude=kernel-core --exclude=kernel-modules \
     --exclude=kernel-modules-core --exclude=kernel-modules-extra \
     kernel-surface \
