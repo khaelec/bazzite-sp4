@@ -18,6 +18,9 @@ jobs:
           sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android /opt/hostedtoolcache/CodeQL || true
           sudo docker image prune -af || true
 
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | sudo podman login ghcr.io -u ${{ github.actor }} --password-stdin
+
       - name: Build a bootable ISO from the image
         env:
           # Must match "name" in recipes/recipe.yml and your GitHub owner.
