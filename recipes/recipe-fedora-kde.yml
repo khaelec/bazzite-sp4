@@ -1,0 +1,23 @@
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+# Image will be published to ghcr.io/<your-github-user>/<name>
+name: fedora-surface-sp4
+description: Fedora Kinoite (KDE Plasma) with the linux-surface kernel baked in - lightweight build for the Surface Pro 4.
+
+# Stock Fedora Kinoite (Fedora 43) is the lightest KDE Atomic base, and it is a
+# bootc image (containers.bootc=1) so ISO generation still works. Much lighter
+# than Bazzite: no Steam/gaming stack/Waydroid. Good for a 4 GB Surface.
+base-image: ghcr.io/blue-build/base-images/fedora-kinoite
+image-version: 43
+
+modules:
+  # Swaps the Fedora kernel for the linux-surface kernel and adds the Surface
+  # userspace packages (iptsd, libwacom-surface). Same script as the Bazzite build.
+  - type: script
+    scripts:
+      - kernel-surface.sh
+
+  - type: os-release
+    properties:
+      PRETTY_NAME: "Fedora Kinoite Surface Pro 4 (Fedora 43)"
+      DEFAULT_HOSTNAME: surface

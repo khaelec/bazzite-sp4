@@ -21,25 +21,33 @@ jobs:
       - name: Log in to GHCR
         run: echo "${{ secrets.GITHUB_TOKEN }}" | sudo podman login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      - name: Build a bootable ISO from the image
+      - name: Build bootable ISOs
         env:
-          # Must match "name" in recipes/recipe.yml and your GitHub owner.
-          IMAGE: ghcr.io/${{ github.repository_owner }}/bazzite-sp4:latest
+          # Image names must match "name" in the recipes and your GitHub owner.
+          IMAGES: |
+            ghcr.io/${{ github.repository_owner }}/fedora-surface-sp4:latest
+            ghcr.io/${{ github.repository_owner }}/bazzite-sp4:latest
         run: |
           set -eux
           mkdir -p output
-          sudo podman pull "$IMAGE"
-          sudo podman run --privileged --rm \
-            -v "$PWD/output:/output" \
-            -v /var/lib/containers/storage:/var/lib/containers/storage \
-            quay.io/centos-bootc/bootc-image-builder:latest \
-            --type iso --rootfs btrfs --local "$IMAGE"
+          while read -r IMAGE; do
+            [ -n "${IMAGE}" ] || continue
+            NAME="$(basename "${IMAGE%%:*}")"
+            echo "=== building ISO for ${IMAGE} ==="
+            mkdir -p "output/${NAME}"
+            sudo podman pull "${IMAGE}"
+            sudo podman run --privileged --rm \
+              -v "$PWD/output/${NAME}:/output" \
+              -v /var/lib/containers/storage:/var/lib/containers/storage \
+              quay.io/centos-bootc/bootc-image-builder:latest \
+              --type iso --rootfs btrfs --local "${IMAGE}"
+          done <<< "$IMAGES"
           sudo chown -R "$(id -u):$(id -g)" output
           find output -name '*.iso' -printf '%p  (%s bytes)\n'
 
-      - name: Upload ISO artifact
+      - name: Upload ISO artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: bazzite-sp4-iso
+          name: surface-sp4-isos
           path: output/**/*.iso
           if-no-files-found: error

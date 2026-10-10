@@ -19,12 +19,18 @@ Type Cover, sensors, Wi-Fi and Bluetooth out of the box.
 
 ## What it builds
 
-| | |
-| --- | --- |
-| Base | `ghcr.io/ublue-os/bazzite:stable-43` (KDE Plasma; use `bazzite-gnome` for GNOME) |
-| Kernel | `kernel-surface` from `pkg.surfacelinux.com/fedora/f43` |
-| Extra | `iptsd`, `libwacom-surface`, `kernel-surface-modules-extra-matched` |
-| Output image | `ghcr.io/<your-github-user>/bazzite-sp4:latest` |
+Two images, both KDE Plasma on Fedora 43 with the same linux-surface kernel:
+
+| Recipe | Base | Output image | Notes |
+| --- | --- | --- | --- |
+| `recipe-fedora-kde.yml` | `ghcr.io/blue-build/base-images/fedora-kinoite:43` (stock Kinoite) | `ghcr.io/<user>/fedora-surface-sp4:latest` | **Lightweight** - recommended for a 4 GB Surface Pro 4 |
+| `recipe.yml` | `ghcr.io/ublue-os/bazzite:stable-43` | `ghcr.io/<user>/bazzite-sp4:latest` | Heavier, gaming-oriented (Steam etc.) |
+
+Both add `kernel-surface`, `iptsd`, `libwacom-surface` and
+`kernel-surface-modules-extra-matched` from `pkg.surfacelinux.com/fedora/f43`.
+
+For a 4 GB / m3 Surface Pro 4, use **`fedora-surface-sp4`** - it has no gaming
+stack, so it is much lighter on RAM and disk.
 
 ## Requirements
 

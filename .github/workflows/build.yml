@@ -22,7 +22,8 @@ jobs:
       fail-fast: false
       matrix:
         recipe:
-          - recipe.yml
+          - recipe.yml # Bazzite (KDE) - heavier, gaming-oriented
+          - recipe-fedora-kde.yml # Fedora Kinoite (KDE) - lightweight
     steps:
       - name: Build Custom Image
         uses: blue-build/github-action@v1
