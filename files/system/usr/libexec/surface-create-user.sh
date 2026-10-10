@@ -1,16 +1,19 @@
 #!/usr/bin/env bash
-# Creates the default desktop user on first boot. Idempotent.
+# Creates the default desktop user and ALWAYS (re)sets its password on first
+# boot. Idempotent: does nothing once it has run successfully.
 set -euo pipefail
 
 USER_NAME="ulrick"
 FLAG="/var/lib/surface-user-created"
 
-if id "${USER_NAME}" >/dev/null 2>&1; then
-    touch "${FLAG}"
-    exit 0
+[ -e "${FLAG}" ] && exit 0
+
+if ! id "${USER_NAME}" >/dev/null 2>&1; then
+    useradd -m -G wheel -c "Ulrick" "${USER_NAME}"
 fi
 
-useradd -m -G wheel -c "Ulrick" "${USER_NAME}"
+# Set the password regardless of whether the user was just created or already
+# existed (e.g. created by bootc-image-builder customizations).
 echo "${USER_NAME}:changeme" | chpasswd
-chage -d 0 "${USER_NAME}"   # force a password change at first login
+
 touch "${FLAG}"
