@@ -13,6 +13,9 @@ jobs:
       contents: read
       packages: read
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Free up disk space
         run: |
           sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android /opt/hostedtoolcache/CodeQL || true
@@ -26,7 +29,6 @@ jobs:
           # Image names must match "name" in the recipes and your GitHub owner.
           IMAGES: |
             ghcr.io/${{ github.repository_owner }}/fedora-surface-sp4:latest
-            ghcr.io/${{ github.repository_owner }}/bazzite-sp4:latest
         run: |
           set -eux
           mkdir -p output
@@ -38,9 +40,10 @@ jobs:
             sudo podman pull "${IMAGE}"
             sudo podman run --privileged --rm \
               -v "$PWD/output/${NAME}:/output" \
+              -v "$PWD/config.toml:/config.toml" \
               -v /var/lib/containers/storage:/var/lib/containers/storage \
               quay.io/centos-bootc/bootc-image-builder:latest \
-              --type iso --rootfs btrfs --local "${IMAGE}"
+              --type iso --rootfs btrfs --config /config.toml --local "${IMAGE}"
           done <<< "$IMAGES"
           sudo chown -R "$(id -u):$(id -g)" output
           find output -name '*.iso' -printf '%p  (%s bytes)\n'
@@ -48,6 +51,6 @@ jobs:
       - name: Upload ISO artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: surface-sp4-isos
+          name: surface-sp4-iso
           path: output/**/*.iso
           if-no-files-found: error

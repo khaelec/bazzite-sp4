@@ -1,0 +1,8 @@
+# bootc-image-builder customizations, applied to the installed system.
+# Creates the login user so the unattended installer leaves a usable account.
+# NOTE: 'password' is unencrypted here and bootc-image-builder hashes it.
+# This is a TEMPORARY password - change it right after first login with: passwd
+[[customizations.user]]
+name = "ulrick"
+password = "changeme"
+groups = ["wheel"]
