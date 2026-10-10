@@ -11,6 +11,11 @@ base-image: ghcr.io/blue-build/base-images/fedora-kinoite
 image-version: 43
 
 modules:
+  - type: files
+    files:
+      - source: system
+        destination: /
+
   # Swaps the Fedora kernel for the linux-surface kernel and adds the Surface
   # userspace packages (iptsd, libwacom-surface). Same script as the Bazzite build.
   - type: script

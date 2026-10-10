@@ -94,4 +94,8 @@ echo "::group::Cleanup"
 dnf clean all
 echo "::endgroup::"
 
+echo "::group::Enable first-boot user creation"
+systemctl enable surface-create-user.service || true
+echo "::endgroup::"
+
 echo "linux-surface kernel baked in: ${VER}"

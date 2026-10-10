@@ -12,6 +12,11 @@ base-image: ghcr.io/ublue-os/bazzite
 image-version: stable-43
 
 modules:
+  - type: files
+    files:
+      - source: system
+        destination: /
+
   # Swaps the Bazzite/OGC kernel for the linux-surface kernel and adds the
   # Surface userspace packages (iptsd, libwacom-surface). See files/scripts.
   - type: script

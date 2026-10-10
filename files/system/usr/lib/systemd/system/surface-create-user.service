@@ -1,0 +1,13 @@
+[Unit]
+Description=Create the default desktop user on first boot
+After=local-fs.target systemd-sysusers.service
+Before=display-manager.service
+ConditionPathExists=!/var/lib/surface-user-created
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/bash /usr/libexec/surface-create-user.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
