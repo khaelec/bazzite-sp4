@@ -62,6 +62,23 @@ dnf -y install --refresh --allowerasing --setopt=install_weak_deps=False \
     libwacom-surface
 echo "::endgroup::"
 
+echo "::group::Disable repos whose local GPG key file is missing"
+# bootc-image-builder depsolve reads every enabled repo; some Bazzite repos
+# (e.g. terra-mesa) reference a file:// GPG key that is not present, which makes
+# ISO generation fail. Disable any such repo. Installed packages are unaffected.
+for repo in /etc/yum.repos.d/*.repo; do
+    [ -e "${repo}" ] || continue
+    missing=""
+    for path in $(grep -o 'file://[^[:space:]]*' "${repo}" 2>/dev/null | sed 's#^file://##'); do
+        [ -f "${path}" ] || missing="${path}"
+    done
+    if [ -n "${missing}" ]; then
+        echo "$(basename "${repo}"): missing GPG key ${missing} -> enabled=0"
+        sed -i 's/^enabled=1/enabled=0/' "${repo}"
+    fi
+done
+echo "::endgroup::"
+
 echo "::group::Regenerate the ostree initramfs for the new kernel"
 VER="$(ls -1 /usr/lib/modules | head -n1)"
 export DRACUT_NO_XATTR=1
